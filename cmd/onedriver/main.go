@@ -52,6 +52,8 @@ func main() {
 	cacheDir := flag.StringP("cache-dir", "c", "",
 		"Change the default cache directory used by onedriver. "+
 			"Will be created if the path does not already exist.")
+	driveID := flag.StringP("drive-id", "i", "",
+		"Drive ID to mount.")
 	wipeCache := flag.BoolP("wipe-cache", "w", false,
 		"Delete the existing onedriver cache directory and then exit. "+
 			"This is equivalent to resetting the program.")
@@ -123,7 +125,7 @@ func main() {
 	// create the filesystem
 	log.Info().Msgf("onedriver %s", common.Version())
 	auth := graph.Authenticate(config.AuthConfig, authPath, *headless)
-	filesystem := fs.NewFilesystem(auth, filepath.Join(cachePath, "onedriver.db"))
+	filesystem := fs.NewFilesystem(auth, filepath.Join(cachePath, "onedriver.db"), *driveID)
 	go filesystem.DeltaLoop(30 * time.Second)
 
 	server, err := fuse.NewServer(filesystem, mountpoint, &fuse.MountOptions{

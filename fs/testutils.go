@@ -46,7 +46,7 @@ func SetupTestLogger() *os.File {
 
 // SetupTestFilesystem sets up a test filesystem
 func SetupTestFilesystem(dbPath string, auth *graph.Auth) *Filesystem {
-	filesystem := NewFilesystem(auth, dbPath)
+	filesystem := NewFilesystem(auth, dbPath, "")
 	server, _ := fuse.NewServer(
 		filesystem,
 		MountLoc,

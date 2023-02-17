@@ -123,6 +123,9 @@ func (f *Filesystem) pollDeltas(auth *graph.Auth) ([]*graph.DriveItem, bool, err
 func (f *Filesystem) applyDelta(delta *graph.DriveItem) error {
 	id := delta.ID
 	name := delta.Name
+	if delta.Parent == nil {
+		return nil
+	}
 	parentID := delta.Parent.ID
 	ctx := log.With().
 		Str("id", id).

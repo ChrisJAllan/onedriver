@@ -47,7 +47,7 @@ var (
 )
 
 // NewFilesystem creates a new filesystem
-func NewFilesystem(auth *graph.Auth, dbpath string) *Filesystem {
+func NewFilesystem(auth *graph.Auth, dbpath string, driveID string) *Filesystem {
 	db, err := bolt.Open(dbpath, 0600, &bolt.Options{Timeout: time.Second * 5})
 	if err != nil {
 		log.Fatal().Err(err).
@@ -65,8 +65,12 @@ func NewFilesystem(auth *graph.Auth, dbpath string) *Filesystem {
 		db:            db,
 		opendirs:      make(map[uint64][]*Inode),
 	}
+	
+	if driveID == "" {
+		driveID = graph.Me
+	}
 
-	rootItem, err := graph.GetItem(graph.Me, graph.Root, auth)
+	rootItem, err := graph.GetItem(driveID, graph.Root, auth)
 	root := NewInodeDriveItem(rootItem)
 	if err != nil {
 		if graph.IsOffline(err) {
@@ -101,10 +105,11 @@ func NewFilesystem(auth *graph.Auth, dbpath string) *Filesystem {
 	fs.root = root.ID()
 	fs.driveID = root.DriveID()
 	fs.InsertID(fs.root, root)
+	log.Info().Msg("Me: " + fs.driveID)
 
 	fs.uploads = NewUploadManager(2*time.Second, db, fs, auth)
 
-	if !fs.IsOffline() {
+	if !fs.IsOffline() && driveID == graph.Me {
 		// create special folders and other initialization logic
 		fs.createXDGVolumeInfo(auth)
 
@@ -210,10 +215,10 @@ func (f *Filesystem) IsOffline() bool {
 // AliasDriveID converts a drive ID to "me" if it's the user's base drive.
 // We just use this for cleaner logs, since most items will be from the base drive.
 func (f *Filesystem) AliasDriveID(id string) string {
-	if id != f.driveID {
+	//if id != f.driveID {
 		return id
-	}
-	return graph.Me
+	//}
+	//return graph.Me
 }
 
 // GetNodeID fetches the inode for a particular inode ID.
